@@ -174,19 +174,20 @@
     console.warn("No se pudo decodificar base64:", e);
   }
 
-  // Guardar diseño en PDF (solo QR y datos, estilo tarjeta)
+  // Guardar diseño en PDF (tarjeta)
   const saveBtn = document.getElementById('save-button');
   saveBtn.addEventListener('click', async () => {
     const { jsPDF } = window.jspdf;
-
     const pdf = new jsPDF('p', 'pt', 'a4');
     const pageWidth = pdf.internal.pageSize.getWidth();
     const margin = 40;
+    const cardHeight = 180;
 
     // Fondo tipo tarjeta
-    pdf.setFillColor(245, 245, 245);
-    pdf.roundedRect(margin, 50, pageWidth - 2*margin, 180, 10, 10, 'F');
+    pdf.setFillColor(245,245,245);
+    pdf.roundedRect(margin, 50, pageWidth - 2*margin, cardHeight, 10,10,'F');
 
+    // Nombre y autor
     pdf.setFontSize(16);
     pdf.setTextColor(0,0,0);
     pdf.text(`Producto: ${productName}`, margin + 20, 80);
@@ -203,20 +204,27 @@
       pdf.rect(colorXStart + i*(colorSize+5), colorY, colorSize, colorSize, 'F');
     });
 
-    // QR
+    // QR centrado dentro de la tarjeta
     const qrCanvas = document.createElement('canvas');
     await QRCode.toCanvas(qrCanvas, window.location.href, { width: 128 });
-    pdf.addImage(qrCanvas.toDataURL('image/png'), pageWidth - 150, 60, 128, 128);
+    const qrX = pageWidth - margin - 128 - 10; // margen + padding
+    const qrY = 60;
+    pdf.addImage(qrCanvas.toDataURL('image/png'), qrX, qrY, 128, 128);
 
-    // Link clicable
+    // URL ajustada al ancho de la tarjeta
     pdf.setTextColor(0,0,255);
     pdf.setFontSize(10);
-    pdf.textWithLink(window.location.href, margin + 20, 170, { url: window.location.href });
+    const urlMaxWidth = pageWidth - 2*margin - 20; // espacio dentro del contenedor gris
+    const urlLines = pdf.splitTextToSize(window.location.href, urlMaxWidth);
+    let yPos = 170;
+    urlLines.forEach(line => {
+      pdf.textWithLink(line, margin + 20, yPos, { url: window.location.href });
+      yPos += 12;
+    });
 
     pdf.save('diseño-producto.pdf');
   });
 
-  // Función para convertir hex a RGB
   function hexToRgb(hex) {
     hex = hex.replace('#','');
     const bigint = parseInt(hex,16);
