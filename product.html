@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Producto 3D - 3D Twins</title>
+<title>3D product twin page</title>
 <script src="https://cdn.3dtwins.tech/sdk.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
@@ -131,7 +131,6 @@
     return;
   }
 
-  // Inicializar SDK
   VH.init({
     containerId: 'vh-container',
     scene: base64Scene
@@ -139,7 +138,6 @@
 
   history.replaceState({}, '', `?scene=${base64Scene}`);
 
-  // Extraer info del producto
   const colorsContainer = document.getElementById('colors');
   let productName = '';
   let productAuthor = '';
@@ -174,7 +172,6 @@
     console.warn("No se pudo decodificar base64:", e);
   }
 
-  // Guardar diseño en PDF (solo QR y datos, estilo tarjeta)
   const saveBtn = document.getElementById('save-button');
   saveBtn.addEventListener('click', async () => {
     const { jsPDF } = window.jspdf;
@@ -183,17 +180,15 @@
     const pageWidth = pdf.internal.pageSize.getWidth();
     const margin = 40;
 
-    // Fondo tipo tarjeta
     pdf.setFillColor(245, 245, 245);
-    pdf.roundedRect(margin, 50, pageWidth - 2*margin, 180, 10, 10, 'F');
+    pdf.roundedRect(margin, 50, pageWidth - 2*margin, 260, 10, 10, 'F');
 
-    pdf.setFontSize(16);
+    pdf.setFontSize(14);
     pdf.setTextColor(0,0,0);
     pdf.text(`Producto: ${productName}`, margin + 20, 80);
     pdf.setFontSize(12);
     pdf.text(`Autor: ${productAuthor}`, margin + 20, 110);
 
-    // Colores
     const colorXStart = margin + 20;
     const colorY = 130;
     const colorSize = 12;
@@ -203,20 +198,17 @@
       pdf.rect(colorXStart + i*(colorSize+5), colorY, colorSize, colorSize, 'F');
     });
 
-    // QR
     const qrCanvas = document.createElement('canvas');
     await QRCode.toCanvas(qrCanvas, window.location.href, { width: 128 });
-    const qrX = pageWidth - margin - 128 - 10; // margen derecho
-    const qrY = 60; // desde arriba
+    const qrX = pageWidth - margin - 128 - 10; 
+    const qrY = 60; 
     pdf.addImage(qrCanvas.toDataURL('image/png'), qrX, qrY, 128, 128);
 
-    // Link clicable ajustado para no salirse
     pdf.setTextColor(0,0,255);
     pdf.setFontSize(10);
     const urlMaxWidth = pageWidth - 2*margin - 20;
     const urlLines = pdf.splitTextToSize(window.location.href, urlMaxWidth);
 
-    // colocamos debajo del QR con margen
     let yPos = qrY + 128 + 10;
     urlLines.forEach(line => {
       pdf.textWithLink(line, margin + 20, yPos, { url: window.location.href });
@@ -226,7 +218,6 @@
     pdf.save('diseño-producto.pdf');
   });
 
-  // Función para convertir hex a RGB
   function hexToRgb(hex) {
     hex = hex.replace('#','');
     const bigint = parseInt(hex,16);
