@@ -173,21 +173,14 @@
   const saveBtn = document.getElementById('save-button');
   saveBtn.addEventListener('click', async () => {
     const { jsPDF } = window.jspdf;
-
-    // Generar QR de la URL de producto
     const qrCanvas = document.createElement('canvas');
     await QRCode.toCanvas(qrCanvas, window.location.href, { width: 128 });
     const qrData = qrCanvas.toDataURL('image/png');
-
-    // Crear PDF
     const pdf = new jsPDF('p', 'pt', 'a4');
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
     const margin = 40;
 
-    pdf.setFontSize(14);
-    pdf.text(`Producto: ${document.getElementById('product-name').innerText}`, margin, margin + 20);
-    pdf.text(`Autor: ${document.getElementById('product-author').innerText}`, margin, margin + 50);
     pdf.addImage(qrData, pdfWidth - 150, margin, 128, 128);
 
     pdf.save('diseño-producto.pdf');
