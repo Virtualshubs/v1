@@ -159,7 +159,6 @@
           circle.addEventListener('click', () => {
             document.querySelectorAll('.color-circle').forEach(c=>c.classList.remove('selected'));
             circle.classList.add('selected');
-            // aquí se podría actualizar modelo 3D dinámicamente
             console.log('Color seleccionado:', colorHex);
           });
           colorsContainer.appendChild(circle);
@@ -170,15 +169,10 @@
     console.warn("No se pudo decodificar base64:", e);
   }
 
-  // Guardar diseño en PDF
+  // Guardar diseño en PDF (solo QR y datos)
   const saveBtn = document.getElementById('save-button');
   saveBtn.addEventListener('click', async () => {
     const { jsPDF } = window.jspdf;
-
-    // Capturamos directamente el canvas WebGL del visor
-    const canvas3D = document.querySelector('#vh-container canvas');
-    if(!canvas3D) return alert("No se ha encontrado el canvas 3D");
-    const img3D = canvas3D.toDataURL('image/png');
 
     // Generar QR de la URL de producto
     const qrCanvas = document.createElement('canvas');
@@ -191,12 +185,10 @@
     const pdfHeight = pdf.internal.pageSize.getHeight();
     const margin = 40;
 
-    pdf.addImage(img3D, 'PNG', margin, margin, pdfWidth - margin*2, pdfHeight - 200);
-    pdf.addImage(qrData, pdfWidth - 150, pdfHeight - 150, 128, 128);
-
-    pdf.setFontSize(12);
-    pdf.text(`Producto: ${document.getElementById('product-name').innerText}`, margin, pdfHeight - 170);
-    pdf.text(`Autor: ${document.getElementById('product-author').innerText}`, margin, pdfHeight - 150);
+    pdf.setFontSize(14);
+    pdf.text(`Producto: ${document.getElementById('product-name').innerText}`, margin, margin + 20);
+    pdf.text(`Autor: ${document.getElementById('product-author').innerText}`, margin, margin + 50);
+    pdf.addImage(qrData, pdfWidth - 150, margin, 128, 128);
 
     pdf.save('diseño-producto.pdf');
   });
