@@ -2,8 +2,11 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Producto 3D</title>
+<title>Producto 3D Twins</title>
 <script src="https://cdn.3dtwins.tech/sdk.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 <style>
   body {
     margin: 0;
@@ -16,15 +19,21 @@
     height: 100vh;
     overflow: hidden;
   }
+  #vh-container {
+    width: 60%;
+    height: 100%;
+    background-color: #f2f2f2;
+  }
   .product-info {
-    width: 35%;
+    width: 40%;
     padding: 40px;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 20px;
     background-color: #f9f9f9;
+    overflow-y: auto;
   }
   .product-info h1 {
     font-size: 2em;
@@ -35,60 +44,67 @@
     color: #555;
     margin: 0;
   }
-  .product-info label {
-    font-weight: bold;
-    margin-top: 10px;
-    display: block;
+  .color-circle {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+    border: 1px solid #ccc;
   }
-  .product-info input[type="number"] {
-    width: 60px;
-    padding: 5px;
+  .buy-button, .save-button {
+    margin-top: 15px;
+    padding: 12px;
     font-size: 1em;
-    margin-top: 5px;
-  }
-  .buy-button {
-    margin-top: 20px;
-    padding: 15px;
-    font-size: 1em;
-    background-color: #111;
-    color: #fff;
     border: none;
     cursor: pointer;
     transition: all 0.2s ease;
   }
+  .buy-button {
+    background-color: #111;
+    color: #fff;
+  }
   .buy-button:hover {
     background-color: #333;
   }
-  #vh-container {
-    width: 65%;
-    height: 100%;
-    background-color: #f2f2f2;
+  .save-button {
+    background-color: #fff;
+    color: #111;
+    border: 1px solid #111;
+  }
+  .save-button:hover {
+    background-color: #f0f0f0;
+  }
+  .colors-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
   }
 </style>
 </head>
 <body>
+
 <div class="container">
+  <div id="vh-container"></div>
+
   <div class="product-info">
     <h1 id="product-name">Nombre del producto</h1>
     <p id="product-author">Autor: </p>
-    <p id="product-config">Configuración: </p>
+    <div id="colors" class="colors-container"></div>
     
     <label for="productQuantity">Cantidad:</label>
     <input type="number" id="productQuantity" value="1" min="1">
     
     <button class="buy-button" id="buy-button">Comprar</button>
+    <button class="save-button" id="save-button">Guardar diseño (PDF)</button>
   </div>
-
-  <div id="vh-container"></div>
 </div>
 
 <script>
-(function(){
+(async function(){
   const urlParams = new URLSearchParams(window.location.search);
   let base64Scene = '';
-  if(urlParams.has('scene')) {
-    base64Scene = urlParams.get('scene');
-  }
+  if(urlParams.has('scene')) base64Scene = urlParams.get('scene');
   if(!base64Scene) {
     console.error("No se ha proporcionado escena en la URL");
     return;
@@ -100,21 +116,33 @@
     scene: base64Scene
   });
 
-  // Mantener URL limpia
   history.replaceState({}, '', `?scene=${base64Scene}`);
 
-  // Extraer parámetros para mostrar info del producto
+  // Extraer info del producto
+  let configColors = [];
   try {
     const decoded = atob(base64Scene);
     const params = new URLSearchParams(decoded.split('?')[1]);
     document.getElementById('product-name').innerText = params.get('name') || '';
     document.getElementById('product-author').innerText = 'Autor: ' + (params.get('author') || 'Desconocido');
-    document.getElementById('product-config').innerText = params.get('config') || '';
+
+    const config = params.get('config') || '';
+    if(config) {
+      config.split('|').forEach(item => {
+        const [objName, colorHex] = item.split(':');
+        if(colorHex){
+          const circle = document.createElement('span');
+          circle.className = 'color-circle';
+          circle.style.backgroundColor = colorHex;
+          document.getElementById('colors').appendChild(circle);
+        }
+      });
+    }
   } catch(e){
     console.warn("No se pudo decodificar base64:", e);
   }
 
-  // Evento de cantidad editable
+  // Cantidad editable
   const qtyInput = document.getElementById('productQuantity');
   qtyInput.addEventListener('change', () => {
     const value = parseInt(qtyInput.value) || 1;
@@ -122,7 +150,33 @@
     console.log("Cantidad actualizada:", value);
   });
 
+  // Guardar diseño en PDF
+  const saveBtn = document.getElementById('save-button');
+  saveBtn.addEventListener('click', async () => {
+    const container = document.body;
+    // renderizamos la escena con html2canvas
+    const canvas = await html2canvas(container, { scale: 2 });
+    const imgData = canvas.toDataURL('image/png');
+
+    // generar QR de URL
+    const qrCanvas = document.createElement('canvas');
+    await QRCode.toCanvas(qrCanvas, window.location.href, { width: 128 });
+
+    // crear PDF
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'pt', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+
+    // imagen de escena
+    pdf.addImage(imgData, 'PNG', 20, 20, pdfWidth - 40, pdfHeight - 160);
+    // QR
+    pdf.addImage(qrCanvas.toDataURL('image/png'), pdfWidth - 150, pdfHeight - 150, 128, 128);
+
+    pdf.save('diseño-producto.pdf');
+  });
 })();
 </script>
+
 </body>
 </html>
