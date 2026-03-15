@@ -171,29 +171,37 @@
     console.warn("No se pudo decodificar base64:", e);
   }
 
-  // Guardar diseño en PDF
-  const saveBtn = document.getElementById('save-button');
-  saveBtn.addEventListener('click', async () => {
-    // Solo capturamos el contenedor del producto
-    const productPage = document.querySelector('.product-page');
-    const canvas = await html2canvas(productPage, { scale: 2 });
-    const imgData = canvas.toDataURL('image/png');
+ saveBtn.addEventListener('click', async () => {
+  const { jsPDF } = window.jspdf;
 
-    // QR de URL
-    const qrCanvas = document.createElement('canvas');
-    await QRCode.toCanvas(qrCanvas, window.location.href, { width: 128 });
+  // 1️⃣ Captura solo el contenedor 3D
+  const canvas3D = await html2canvas(document.getElementById('vh-container'), { scale: 2 });
+  const img3D = canvas3D.toDataURL('image/png');
 
-    // PDF
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF('p', 'pt', 'a4');
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
+  // 2️⃣ Generar QR dinámico
+  const qrCanvas = document.createElement('canvas');
+  await QRCode.toCanvas(qrCanvas, window.location.href, { width: 128 });
+  const qrData = qrCanvas.toDataURL('image/png');
 
-    pdf.addImage(imgData, 'PNG', 20, 20, pdfWidth - 40, pdfHeight - 180);
-    pdf.addImage(qrCanvas.toDataURL('image/png'), pdfWidth - 150, pdfHeight - 150, 128, 128);
+  // 3️⃣ Crear PDF
+  const pdf = new jsPDF('p', 'pt', 'a4');
+  const pdfWidth = pdf.internal.pageSize.getWidth();
+  const pdfHeight = pdf.internal.pageSize.getHeight();
 
-    pdf.save('diseño-producto.pdf');
-  });
+  // Imagen 3D centrada
+  const margin = 40;
+  pdf.addImage(img3D, 'PNG', margin, margin, pdfWidth - margin*2, pdfHeight - 250);
+
+  // QR abajo a la derecha
+  pdf.addImage(qrData, pdfWidth - 150, pdfHeight - 150, 128, 128);
+
+  // Datos del producto arriba o en lateral
+  pdf.setFontSize(12);
+  pdf.text(`Producto: ${document.getElementById('product-name').innerText}`, margin, pdfHeight - 180);
+  pdf.text(`Autor: ${document.getElementById('product-author').innerText}`, margin, pdfHeight - 160);
+
+  pdf.save('diseño-producto.pdf');
+});
 
 })();
 </script>
