@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>Producto 3D - 3D Twins</title>
 <script src="https://cdn.3dtwins.tech/sdk.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 <style>
@@ -139,7 +138,7 @@
 
   history.replaceState({}, '', `?scene=${base64Scene}`);
 
-  // Extraer info del producto y colores
+  // Extraer info del producto
   const colorsContainer = document.getElementById('colors');
   try {
     const decoded = atob(base64Scene);
@@ -160,7 +159,7 @@
           circle.addEventListener('click', () => {
             document.querySelectorAll('.color-circle').forEach(c=>c.classList.remove('selected'));
             circle.classList.add('selected');
-            // Actualizar color en modelo 3D dinámicamente si se desea
+            // aquí se podría actualizar modelo 3D dinámicamente
             console.log('Color seleccionado:', colorHex);
           });
           colorsContainer.appendChild(circle);
@@ -171,34 +170,36 @@
     console.warn("No se pudo decodificar base64:", e);
   }
 
-saveBtn.addEventListener('click', async () => {
-  const { jsPDF } = window.jspdf;
+  // Guardar diseño en PDF
+  const saveBtn = document.getElementById('save-button');
+  saveBtn.addEventListener('click', async () => {
+    const { jsPDF } = window.jspdf;
 
-  // Capturamos directamente el canvas WebGL del visor
-  const canvas3D = document.querySelector('#vh-container canvas');
-  if(!canvas3D) return alert("No se ha encontrado el canvas 3D");
-  const img3D = canvas3D.toDataURL('image/png');
+    // Capturamos directamente el canvas WebGL del visor
+    const canvas3D = document.querySelector('#vh-container canvas');
+    if(!canvas3D) return alert("No se ha encontrado el canvas 3D");
+    const img3D = canvas3D.toDataURL('image/png');
 
-  // Generar QR de la URL de producto
-  const qrCanvas = document.createElement('canvas');
-  await QRCode.toCanvas(qrCanvas, window.location.href, { width: 128 });
-  const qrData = qrCanvas.toDataURL('image/png');
+    // Generar QR de la URL de producto
+    const qrCanvas = document.createElement('canvas');
+    await QRCode.toCanvas(qrCanvas, window.location.href, { width: 128 });
+    const qrData = qrCanvas.toDataURL('image/png');
 
-  // Crear PDF
-  const pdf = new jsPDF('p', 'pt', 'a4');
-  const pdfWidth = pdf.internal.pageSize.getWidth();
-  const pdfHeight = pdf.internal.pageSize.getHeight();
-  const margin = 40;
+    // Crear PDF
+    const pdf = new jsPDF('p', 'pt', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    const margin = 40;
 
-  pdf.addImage(img3D, 'PNG', margin, margin, pdfWidth - margin*2, pdfHeight - 200);
-  pdf.addImage(qrData, pdfWidth - 150, pdfHeight - 150, 128, 128);
+    pdf.addImage(img3D, 'PNG', margin, margin, pdfWidth - margin*2, pdfHeight - 200);
+    pdf.addImage(qrData, pdfWidth - 150, pdfHeight - 150, 128, 128);
 
-  pdf.setFontSize(12);
-  pdf.text(`Producto: ${document.getElementById('product-name').innerText}`, margin, pdfHeight - 170);
-  pdf.text(`Autor: ${document.getElementById('product-author').innerText}`, margin, pdfHeight - 150);
+    pdf.setFontSize(12);
+    pdf.text(`Producto: ${document.getElementById('product-name').innerText}`, margin, pdfHeight - 170);
+    pdf.text(`Autor: ${document.getElementById('product-author').innerText}`, margin, pdfHeight - 150);
 
-  pdf.save('diseño-producto.pdf');
-});
+    pdf.save('diseño-producto.pdf');
+  });
 
 })();
 </script>
