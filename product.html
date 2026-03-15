@@ -139,7 +139,7 @@
 
   history.replaceState({}, '', `?scene=${base64Scene}`);
 
-  // Extraer info del producto
+  // Extraer info del producto y colores
   const colorsContainer = document.getElementById('colors');
   try {
     const decoded = atob(base64Scene);
@@ -160,7 +160,7 @@
           circle.addEventListener('click', () => {
             document.querySelectorAll('.color-circle').forEach(c=>c.classList.remove('selected'));
             circle.classList.add('selected');
-            // aquí se podría actualizar modelo 3D dinámicamente
+            // Actualizar color en modelo 3D dinámicamente si se desea
             console.log('Color seleccionado:', colorHex);
           });
           colorsContainer.appendChild(circle);
@@ -171,37 +171,40 @@
     console.warn("No se pudo decodificar base64:", e);
   }
 
- saveBtn.addEventListener('click', async () => {
-  const { jsPDF } = window.jspdf;
+  // Guardar diseño en PDF
+  const saveBtn = document.getElementById('save-button');
+  saveBtn.addEventListener('click', async () => {
+    const { jsPDF } = window.jspdf;
 
-  // 1️⃣ Captura solo el contenedor 3D
-  const canvas3D = await html2canvas(document.getElementById('vh-container'), { scale: 2 });
-  const img3D = canvas3D.toDataURL('image/png');
+    // Capturar solo el contenedor 3D
+    const vhContainer = document.getElementById('vh-container');
+    const canvas3D = await html2canvas(vhContainer, { scale: 2 });
+    const img3D = canvas3D.toDataURL('image/png');
 
-  // 2️⃣ Generar QR dinámico
-  const qrCanvas = document.createElement('canvas');
-  await QRCode.toCanvas(qrCanvas, window.location.href, { width: 128 });
-  const qrData = qrCanvas.toDataURL('image/png');
+    // Generar QR de la URL de producto
+    const qrCanvas = document.createElement('canvas');
+    await QRCode.toCanvas(qrCanvas, window.location.href, { width: 128 });
+    const qrData = qrCanvas.toDataURL('image/png');
 
-  // 3️⃣ Crear PDF
-  const pdf = new jsPDF('p', 'pt', 'a4');
-  const pdfWidth = pdf.internal.pageSize.getWidth();
-  const pdfHeight = pdf.internal.pageSize.getHeight();
+    // Crear PDF
+    const pdf = new jsPDF('p', 'pt', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    const margin = 40;
 
-  // Imagen 3D centrada
-  const margin = 40;
-  pdf.addImage(img3D, 'PNG', margin, margin, pdfWidth - margin*2, pdfHeight - 250);
+    // Imagen 3D
+    pdf.addImage(img3D, 'PNG', margin, margin, pdfWidth - margin*2, pdfHeight - 200);
 
-  // QR abajo a la derecha
-  pdf.addImage(qrData, pdfWidth - 150, pdfHeight - 150, 128, 128);
+    // QR abajo a la derecha
+    pdf.addImage(qrData, pdfWidth - 150, pdfHeight - 150, 128, 128);
 
-  // Datos del producto arriba o en lateral
-  pdf.setFontSize(12);
-  pdf.text(`Producto: ${document.getElementById('product-name').innerText}`, margin, pdfHeight - 180);
-  pdf.text(`Autor: ${document.getElementById('product-author').innerText}`, margin, pdfHeight - 160);
+    // Datos del producto
+    pdf.setFontSize(12);
+    pdf.text(`Producto: ${document.getElementById('product-name').innerText}`, margin, pdfHeight - 170);
+    pdf.text(`Autor: ${document.getElementById('product-author').innerText}`, margin, pdfHeight - 150);
 
-  pdf.save('diseño-producto.pdf');
-});
+    pdf.save('diseño-producto.pdf');
+  });
 
 })();
 </script>
