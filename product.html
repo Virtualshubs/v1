@@ -153,12 +153,17 @@
   // Extraer info del producto
   const colorsContainer = document.getElementById('colors');
   let rawUrl = '';
+  let productName = '';
+  let productAuthor = '';
   try {
     const decoded = atob(base64Scene);
     rawUrl = decoded;
     const params = new URLSearchParams(decoded.split('?')[1]);
-    document.getElementById('product-name').innerText = params.get('name') || '';
-    document.getElementById('product-author').innerText = 'Autor: ' + (params.get('author') || 'Desconocido');
+    productName = params.get('name') || '';
+    productAuthor = params.get('author') || 'Desconocido';
+
+    document.getElementById('product-name').innerText = productName;
+    document.getElementById('product-author').innerText = 'Autor: ' + productAuthor;
 
     const config = params.get('config') || '';
     if(config){
@@ -183,32 +188,42 @@
     console.warn("No se pudo decodificar base64:", e);
   }
 
-  // Comprimir URL para PDF y QR
+  // Comprimir URL
   const compressedScene = LZString.compressToEncodedURIComponent(rawUrl);
   const shortUrl = `${window.location.origin}${window.location.pathname}?scene=${compressedScene}`;
   document.getElementById('short-url').innerHTML = `Link del producto: <a href="${shortUrl}" target="_blank">${shortUrl}</a>`;
 
-  // Guardar diseño en PDF (solo QR y link)
+  // Guardar diseño en PDF estilo tarjeta
   const saveBtn = document.getElementById('save-button');
   saveBtn.addEventListener('click', async () => {
-    // QR de URL
-    const qrCanvas = document.createElement('canvas');
-    await QRCode.toCanvas(qrCanvas, shortUrl, { width: 128 });
-
-    // PDF
     const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF('p', 'pt', 'a4');
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
+    const pdf = new jsPDF('p', 'pt', [350,200]); // tamaño tarjeta
 
+    // Fondo
+    pdf.setFillColor(245,245,245);
+    pdf.rect(0,0,350,200,'F');
+
+    // Título
+    pdf.setFontSize(18);
+    pdf.setTextColor(0,0,0);
+    pdf.text(productName, 20, 40);
+
+    // Autor
     pdf.setFontSize(12);
-    pdf.text("Link del producto:", 20, 40);
+    pdf.setTextColor(80,80,80);
+    pdf.text('Autor: ' + productAuthor, 20, 60);
+
+    // QR
+    const qrCanvas = document.createElement('canvas');
+    await QRCode.toCanvas(qrCanvas, shortUrl, { width: 80 });
+    pdf.addImage(qrCanvas.toDataURL('image/png'), 250, 20, 80, 80);
+
+    // Link clicable
+    pdf.setFontSize(10);
     pdf.setTextColor(0,0,255);
-    pdf.textWithLink(shortUrl, 20, 60, { url: shortUrl });
+    pdf.textWithLink(shortUrl, 20, 90, { url: shortUrl });
 
-    pdf.addImage(qrCanvas.toDataURL('image/png'), pdfWidth - 150, 20, 128, 128);
-
-    pdf.save('diseño-producto.pdf');
+    pdf.save('tarjeta-producto.pdf');
   });
 
 })();
