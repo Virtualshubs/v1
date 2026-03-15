@@ -200,7 +200,7 @@
 
     const qrCanvas = document.createElement('canvas');
     await QRCode.toCanvas(qrCanvas, window.location.href, { width: 128 });
-    const qrX = pageWidth - margin - 128 - 10; 
+    const qrX = pageWidth - margin - 138 - 10; 
     const qrY = 60; 
     pdf.addImage(qrCanvas.toDataURL('image/png'), qrX, qrY, 128, 128);
 
