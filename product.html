@@ -1,55 +1,128 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Producto 3D</title>
-  <script src="https://cdn.3dtwins.tech/sdk.js"></script> <!-- SDK -->
+<meta charset="UTF-8">
+<title>Producto 3D</title>
+<script src="https://cdn.3dtwins.tech/sdk.js"></script>
+<style>
+  body {
+    margin: 0;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background-color: #fff;
+    color: #111;
+  }
+  .container {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .product-info {
+    width: 35%;
+    padding: 40px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 20px;
+    background-color: #f9f9f9;
+  }
+  .product-info h1 {
+    font-size: 2em;
+    margin: 0;
+  }
+  .product-info p {
+    font-size: 1em;
+    color: #555;
+    margin: 0;
+  }
+  .product-info label {
+    font-weight: bold;
+    margin-top: 10px;
+    display: block;
+  }
+  .product-info input[type="number"] {
+    width: 60px;
+    padding: 5px;
+    font-size: 1em;
+    margin-top: 5px;
+  }
+  .buy-button {
+    margin-top: 20px;
+    padding: 15px;
+    font-size: 1em;
+    background-color: #111;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .buy-button:hover {
+    background-color: #333;
+  }
+  #vh-container {
+    width: 65%;
+    height: 100%;
+    background-color: #f2f2f2;
+  }
+</style>
 </head>
 <body>
-  <div id="product-info" style="width:25%; float:left; padding:10px;">
-    <h1 id="product-name"></h1>
-    <p id="product-author"></p>
-    <p id="product-config"></p>
+<div class="container">
+  <div class="product-info">
+    <h1 id="product-name">Nombre del producto</h1>
+    <p id="product-author">Autor: </p>
+    <p id="product-config">Configuración: </p>
+    
+    <label for="productQuantity">Cantidad:</label>
     <input type="number" id="productQuantity" value="1" min="1">
-    <button id="buy-button">Comprar</button>
+    
+    <button class="buy-button" id="buy-button">Comprar</button>
   </div>
 
-  <div id="vh-container" style="width:70%; height:100vh; float:right;"></div>
+  <div id="vh-container"></div>
+</div>
 
-  <script>
-    (function(){
-      // Leer parámetro scene de la URL
-      const urlParams = new URLSearchParams(window.location.search);
-      let base64Scene = '';
-      if(urlParams.has('scene')) {
-        base64Scene = urlParams.get('scene');
-      }
+<script>
+(function(){
+  const urlParams = new URLSearchParams(window.location.search);
+  let base64Scene = '';
+  if(urlParams.has('scene')) {
+    base64Scene = urlParams.get('scene');
+  }
+  if(!base64Scene) {
+    console.error("No se ha proporcionado escena en la URL");
+    return;
+  }
 
-      if(!base64Scene) {
-        console.error("No se ha proporcionado escena en la URL");
-        return;
-      }
+  // Inicializar SDK
+  VH.init({
+    containerId: 'vh-container',
+    scene: base64Scene
+  });
 
-      // Inicializar SDK igual que en scene.3dtwins.tech
-      VH.init({
-        containerId: 'vh-container',
-        scene: base64Scene
-      });
+  // Mantener URL limpia
+  history.replaceState({}, '', `?scene=${base64Scene}`);
 
-      // Reemplazar URL para que quede limpia
-      history.replaceState({}, '', `?scene=${base64Scene}`);
+  // Extraer parámetros para mostrar info del producto
+  try {
+    const decoded = atob(base64Scene);
+    const params = new URLSearchParams(decoded.split('?')[1]);
+    document.getElementById('product-name').innerText = params.get('name') || '';
+    document.getElementById('product-author').innerText = 'Autor: ' + (params.get('author') || 'Desconocido');
+    document.getElementById('product-config').innerText = params.get('config') || '';
+  } catch(e){
+    console.warn("No se pudo decodificar base64:", e);
+  }
 
-      // Opcional: decodificar base64 para rellenar info de producto
-      try {
-        const decoded = atob(base64Scene);
-        const params = new URLSearchParams(decoded.split('?')[1]);
-        document.getElementById('product-name').innerText = params.get('name') || '';
-        document.getElementById('product-author').innerText = params.get('author') || '';
-        document.getElementById('product-config').innerText = params.get('config') || '';
-      } catch(e){
-        console.warn("No se pudo decodificar base64:", e);
-      }
-    })();
-  </script>
+  // Evento de cantidad editable
+  const qtyInput = document.getElementById('productQuantity');
+  qtyInput.addEventListener('change', () => {
+    const value = parseInt(qtyInput.value) || 1;
+    qtyInput.value = value;
+    console.log("Cantidad actualizada:", value);
+  });
+
+})();
+</script>
 </body>
 </html>
