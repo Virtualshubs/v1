@@ -1,8 +1,11 @@
 body{
   margin:0;
   font-family:'Helvetica Neue', Arial, sans-serif;
-  background-color:transparent;
+  background:transparent;
   color:#111;
+  padding:40px 20px; /* margen superior e inferior */
+  display:flex;
+  justify-content:center;
 }
 
 /* CONTENEDOR PRINCIPAL */
@@ -11,8 +14,7 @@ body{
   display:flex;
   max-width:1200px;
   width:100%;
-  margin:auto;
-  min-height:80vh;
+  min-height:650px;
   border-radius:12px;
   overflow:hidden;
   box-shadow:0 6px 18px rgba(0,0,0,0.1);
@@ -22,15 +24,15 @@ body{
 /* VISOR 3D */
 
 #vh-container{
-  flex:1;
+  flex:1.2; /* visor ligeramente más grande */
   background:#eaeaea;
   margin:20px;
   border-radius:8px;
   position:relative;
-  min-height:500px;
+  min-height:520px;
 }
 
-/* INFORMACIÓN PRODUCTO */
+/* INFO PRODUCTO */
 
 .product-info{
   flex:1;
@@ -84,7 +86,7 @@ body{
   font-size:1em;
   border:none;
   cursor:pointer;
-  transition:all .2s ease;
+  transition:.2s;
   border-radius:6px;
 }
 
@@ -119,20 +121,20 @@ input[type="number"]{
   font-size:1em;
 }
 
-/* ========================= */
+/* ===================== */
 /* TABLET */
-/* ========================= */
+/* ===================== */
 
 @media (max-width:900px){
 
   .product-page{
     flex-direction:column;
-    border-radius:0;
+    min-height:auto;
   }
 
   #vh-container{
     width:100%;
-    height:55vh;
+    height:60vh;
     margin:0;
     border-radius:0;
   }
@@ -143,20 +145,23 @@ input[type="number"]{
 
 }
 
-/* ========================= */
+/* ===================== */
 /* MOBILE */
-/* ========================= */
+/* ===================== */
 
 @media (max-width:480px){
 
+  body{
+    padding:0;
+  }
+
   .product-page{
-    flex-direction:column;
-    min-height:auto;
+    border-radius:0;
   }
 
   #vh-container{
     width:100%;
-    height:50vh;
+    height:55vh;
     margin:0;
   }
 
@@ -182,7 +187,6 @@ input[type="number"]{
   .save-button{
     width:100%;
     padding:11px;
-    font-size:0.95em;
   }
 
 }
