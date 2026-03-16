@@ -1,3 +1,4 @@
+/* ===== BODY ===== */
 body{
   margin:0;
   font-family:'Helvetica Neue',Arial,sans-serif;
@@ -5,8 +6,7 @@ body{
   color:#111;
 }
 
-/* CONTENEDOR */
-
+/* ===== CONTENEDOR PRINCIPAL ===== */
 .product-page{
   display:flex;
   width:100%;
@@ -18,23 +18,24 @@ body{
   box-shadow:0 6px 18px rgba(0,0,0,0.1);
 }
 
-/* VISOR */
-
+/* ===== VISOR 3D ===== */
 #vh-container{
   flex:2;
   background:#eaeaea;
   margin:20px 0;
   border-radius:10px;
   position:relative;
-  height:auto;
-  min-height:700px; /* asegura que los botones sean clicables */
-  max-height:90vh;  /* no ocupa más del 90% de la pantalla */
+
+  /* Altura adaptativa segura para botones */
+  height:70vh;       /* 70% de la pantalla */
+  min-height:600px;  /* nunca menos de 600px en desktop */
+  max-height:900px;  /* máximo para no tapar datos */
+
   overflow:hidden;
-  touch-action:none; /* evita conflictos de scroll en mobile */
+  touch-action:none;  /* evita conflictos de scroll en mobile */
 }
 
-/* DATOS */
-
+/* ===== DATOS DEL PRODUCTO ===== */
 .product-info{
   flex:1;
   padding:40px;
@@ -44,14 +45,12 @@ body{
 }
 
 /* TITULO */
-
 .product-info h1{
   font-size:2em;
   margin:0;
 }
 
-/* TEXTO */
-
+/* DESCRIPCIÓN */
 .product-info p{
   font-size:1em;
   color:#555;
@@ -59,7 +58,6 @@ body{
 }
 
 /* COLORES */
-
 .colors-container{
   display:flex;
   gap:10px;
@@ -80,7 +78,6 @@ body{
 }
 
 /* BOTONES */
-
 .buy-button,
 .save-button{
   padding:12px;
@@ -102,7 +99,6 @@ body{
 }
 
 /* ===== TABLET ===== */
-
 @media (max-width:900px){
 
   .product-page{
@@ -111,29 +107,26 @@ body{
   }
 
   #vh-container{
+    height:65vh;       /* visor más alto relativo a pantalla */
+    min-height:500px;  /* nunca demasiado pequeño */
+    max-height:700px;  /* no ocupa toda la pantalla */
     margin:0;
-    width:100%;
-    height:auto;
-    min-height:550px; /* altura mínima en tablet */
-    max-height:80vh;  /* no ocupe toda la pantalla */
     border-radius:0;
   }
 
   .product-info{
     padding:30px 20px;
   }
-
 }
 
 /* ===== MOBILE ===== */
-
 @media (max-width:480px){
 
   #vh-container{
     width:100%;
-    height:auto;
-    min-height:400px; /* suficiente para botones en móvil */
-    max-height:70vh;
+    height:55vh;       /* 55% de la pantalla */
+    min-height:400px;  /* suficiente para botones */
+    max-height:600px;
   }
 
   .product-info{
