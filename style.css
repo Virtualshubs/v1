@@ -25,12 +25,9 @@ body{
   margin:20px 0;
   border-radius:10px;
   position:relative;
-
-  /* Altura adaptativa segura para botones */
-  height:70vh;       /* 70% de la pantalla */
-  min-height:600px;  /* nunca menos de 600px en desktop */
+  height:75vh;       /* 70% de la pantalla */
+  min-height:650px;  /* nunca menos de 600px en desktop */
   max-height:900px;  /* máximo para no tapar datos */
-
   overflow:hidden;
   touch-action:none;  /* evita conflictos de scroll en mobile */
 }
@@ -124,9 +121,9 @@ body{
 
   #vh-container{
     width:100%;
-    height:55vh;       /* 55% de la pantalla */
+    height:60vh;       /* 55% de la pantalla */
     min-height:400px;  /* suficiente para botones */
-    max-height:600px;
+    max-height:650px;
   }
 
   .product-info{
