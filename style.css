@@ -1,7 +1,7 @@
   body {
     margin: 0;
     font-family: 'Helvetica Neue', Arial, sans-serif;
-    background-color: #f7f7f7;
+    background-color: transparent;
     color: #111;
     display: flex;
     justify-content: center;
